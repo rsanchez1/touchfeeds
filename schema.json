@@ -1,0 +1,36 @@
+[
+	{
+		"table": "articles",
+		"columns": [
+			{
+				"column": "articleID",
+				"type": "INTEGER",
+				"constraints": ["NOT NULL PRIMARY KEY AUTOINCREMENT"]
+			},
+			{
+				"column": "author",
+				"type": "TEXT"
+			},
+			{
+				"column": "title",
+				"type": "TEXT"
+			},
+			{
+				"column": "displayDate",
+				"type": "TEXT"
+			},
+			{
+				"column": "origin",
+				"type": "TEXT"
+			},
+			{
+				"column": "summary",
+				"type": "TEXT"
+			},
+			{
+				"column": "url",
+				"type": "TEXT"
+			}
+		]
+	}
+]

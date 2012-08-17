@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+<title>TouchFeeds</title>
+<script src="enyo/1.0/framework/enyo.js" type="text/javascript"></script>
+<meta name="viewport" content="height=device-height" />
+</head>
+<body>
+<script type="text/javascript">
+    if (typeof enyo == "undefined") {
+    //if (true) { 
+        //no enyo, tell user to install
+        var parts = window.location.href.split("/");
+        parts.pop();
+        parts.push("update.html");
+        var url = parts.join("/");
+        window.open(url, "update", 'attributes={"window":"card"}');
+    } else {
+        //note: in the docs it says to not load UI code when you don't need it. feeling lazy here so not doing it that way.
+        enyo.log("in launcher.html");
+        (function() {
+            enyo.application.isPhone = false;
+            var info = enyo.fetchDeviceInfo();
+            if (!!info) {
+                var height = info.screenHeight;
+                var width = info.screenWidth;
+                if ((height == 320 && width == 480) || (height == 480 && width == 320) || (height == 800 && width == 480) || (height == 480 && width == 800) || (height == 400 && width == 320) || (height == 320 && width == 400)) {
+                    enyo.application.isPhone = true;
+                }
+            }
+            enyo.log("in launching function");
+            var launcher = enyo.application.launcher = new Launcher();
+            enyo.log("set app launcher");
+            enyo.applicationRelaunchHandler = function(params) {
+                enyo.log("called application relaunch handler");
+                enyo.application.launcher.relaunch(params);
+            };
+
+            enyo.log("called app launcher startup");
+            launcher.startup();
+        })();
+    }
+</script>
+</body>
+</html>

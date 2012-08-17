@@ -1,0 +1,29 @@
+{
+    "name": "TouchFeeds",
+    "description": "A client for Google Reader",
+    "version": "2.0.0",
+    "app": {
+        "launch": {
+            "local_path": "index.html"
+        }
+    },
+    "icons": {
+        "16": "tiny_icon.png",
+        "48": "small_icon.png",
+        "128": "large_icon.png"
+    },
+    "permissions" : [
+        "tabs",
+        "notifications",
+        "https://www.google.com/accounts/ClientLogin*",
+        "http://text.readitlaterlist.com/v2/text*",
+        "http://www.google.com/reader/api/0/*",
+        "https://accounts.google.com/o/oauth2/token"
+    ],
+    "requirements": {
+        "3D": {
+            "features": ["css3d"]
+        }
+    },
+    "offline_enabled": true
+}

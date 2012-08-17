@@ -1,0 +1,211 @@
+var Article = Class.create({
+  initialize: function(data, subscription) {
+    this.api = subscription.api
+    this.id = data.id
+    this.subscription = subscription
+    this.subscriptionId = data.origin ? data.origin.streamId : subscription.id
+    this.title = data.title || "No Title"
+    this.author = data.author
+	var apiOrigin = this.api.titleFor(this.subscriptionId)
+    var content = data.content || data.summary || {content: ""}
+    this.summary = this.cleanUp(content.content)
+    this.readLocked = data.isReadStateLocked
+    this.setStates(data.categories)
+    this.setDates(parseInt(data.crawlTimeMsec, 10))
+    this.setArticleLink(data.alternate)
+	this.setArticleVia(data.via);
+	if (!apiOrigin) {
+		this.origin = data.origin.title;
+	} else {
+		this.origin = apiOrigin;
+	}
+	if (this.via !== "") {
+		this.origin = this.origin + " - via " + this.via;
+	}
+  },
+
+  cleanUp: function(content) {
+    var cleaned = this.replaceYouTubeLinks(content)
+    cleaned = cleaned.replace(/<script.*?<\/script.*?>/g , "")
+    cleaned = cleaned.replace(/<iframe.*?<\/iframe.*?>/g , "")
+    cleaned = cleaned.replace(/<object.*?<\/object.*?>/g , "")
+    return cleaned
+  },
+
+  replaceYouTubeLinks: function(content) {
+    var embed = /<(embed|iframe).*src="(.*?youtube.com.*?)".*<\/(embed|iframe)>/
+    var urlMatch = embed.exec(content)
+
+    if(urlMatch) {
+      var idMatch = /\/(embed|v)\/([_\-a-zA-Z0-9]+)/.exec(urlMatch[2])
+
+      if(idMatch) {
+        var id = idMatch[2]
+        content = content.replace(embed, '<div class="youtube"><img class="youtube-thumbnail" src="http://img.youtube.com/vi/' + id + '/0.jpg"><div class="youtube-play" data-url="http://youtube.com/watch?v=' + id + '">&nbsp;</div></div>')
+      }
+    }
+
+    return content
+  },
+
+  setStates: function(categories) {
+    this.isRead = false
+    this.isShared = false
+    this.isStarred = false
+
+    categories.each(function(category) {
+      if(category.endsWith("/state/com.google/read")) {
+        this.isRead = true
+      }
+
+      if(category.endsWith("/state/com.google/kept-unread")) {
+        this.keepUnread = true
+      }
+
+      if(category.endsWith("/state/com.google/starred")) {
+        this.isStarred = true
+      }
+
+      if(category.endsWith("/state/com.google/broadcast")) {
+        this.isShared = true
+      }
+    }.bind(this))
+  },
+
+  setDates: function(milliseconds) {
+    this.updatedAt = new Date(milliseconds)
+    var month = this.leftPad(this.updatedAt.getMonth() + 1)
+    var day = this.leftPad(this.updatedAt.getDate())
+    var year = "" + this.updatedAt.getFullYear()
+
+    this.displayDate = this.updatedAt.toLocaleDateString()/* + " " + this.updatedAt.toLocaleTimeString()*/
+    this.displayDateAndTime = this.updatedAt.toLocaleDateString() + " " + this.updatedAt.toLocaleTimeString()
+    this.sortDate = year + month + day
+  },
+
+  setArticleLink: function(alternates) {
+    (alternates || []).each(function(alternate) {
+      if(alternate.type.include("html")) {
+        this.url = alternate.href
+        return
+      }
+    }.bind(this))
+  },
+
+  setArticleVia: function(via) {
+	this.via = "";
+	(via || []).each(function(item) {
+		if (!!item.title) {
+			this.via = item.title
+			return
+		}
+	}.bind(this))
+  },
+
+  leftPad: function(number) {
+    var s = "0000" + number
+    return s.substr(s.length - 2)
+  },
+
+  toggleRead: function() {
+    if(this.isRead) {
+      this.turnReadOff(function() {}, function() {}, true)
+    }
+    else {
+      this.turnReadOn(function() {}, function() {})
+    }
+  },
+
+  toggleStarred: function() {
+    if(this.isStarred) {
+      this.turnStarOff(function() {}, function() {})
+    }
+    else {
+      this.turnStarOn(function() {}, function() {})
+    }
+  },
+
+  turnReadOn: function(success, failure) {
+    this._setState("Read", "isRead", true, success, failure)
+  },
+
+  turnReadOff: function(success, failure, sticky) {
+    this.keepUnread = sticky
+    this._setState("NotRead", "isRead", false, success, failure, sticky)
+  },
+
+  turnShareOn: function(success, failure) {
+    this._setState("Shared", "isShared", true, success, failure)
+  },
+
+  turnShareOff: function(success, failure) {
+    this._setState("NotShared", "isShared", false, success, failure)
+  },
+
+  turnStarOn: function(success, failure) {
+    this._setState("Starred", "isStarred", true, success, failure)
+  },
+
+  turnStarOff: function(success, failure) {
+    this._setState("NotStarred", "isStarred", false, success, failure)
+  },
+
+  _setState: function(apiState, localProperty, localValue, success, failure, sticky) {
+
+    if(apiState.match(/Read/) && this.readLocked) {
+      Feeder.notify("Read state has been locked by Google")
+      success(false)
+    }
+    else {
+      this[localProperty] = localValue
+
+      var onComplete = function() {
+        //Mojo.Event.send(document, "Article" + apiState, {subscriptionId: this.subscriptionId})
+        success(true)
+      }.bind(this)
+
+      this.api["setArticle" + apiState](this.id, this.subscriptionId, onComplete, failure, sticky)
+    }
+  },
+
+  forceReadOn: function() {
+      this.isRead = true;
+  },
+
+  getPrevious: function(callback) {
+    var previousIndex = this.index - 1
+    var previous = null
+
+    if(this.index) {
+      previous = this.subscription.items[previousIndex]
+      previous.index = previousIndex
+    }
+
+    callback(previous)
+  },
+
+  getNext: function(callback, loadingMore) {
+    var nextIndex = this.index + 1
+    var next = null
+
+    if(nextIndex < this.subscription.items.length) {
+      next = this.subscription.items[nextIndex]
+      next.index = nextIndex
+    }
+
+    if(next && next.load_more) {
+      loadingMore()
+
+      var foundMore = function() {
+        next = this.subscription.items[nextIndex]
+        next.index = nextIndex
+        callback(next)
+      }.bind(this)
+
+      this.subscription.findArticles(foundMore, callback)
+    }
+    else {
+      callback(next)
+    }
+  }
+})
