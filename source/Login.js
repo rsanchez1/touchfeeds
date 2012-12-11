@@ -51,7 +51,7 @@ enyo.kind({
                 {kind: "onyx.Button", content: "Cancel", style: "height: 2.0rem !important; width: 7.0rem !important;", classes: "enyo-button", onclick: "cancelClick"},
             ]}
         ]},
-        {name: "pgOauthLogin", kind: "ChildBrowser", onOauth2Success: "pgOauthSuccess", onOauth2Failure: "pgOauthFailure"}
+        //{name: "pgOauthLogin", kind: "ChildBrowser", onOauth2Success: "pgOauthSuccess", onOauth2Failure: "pgOauthFailure"}
     ],
     /*
     onOpen: function() {
@@ -69,7 +69,8 @@ enyo.kind({
         enyo.log("creating dialog box");
         this.inherited(arguments);
         this.results = [];
-        if (!!cordova) {
+        //if (!!cordova) {
+        if (typeof cordova !== "undefined") {
             if (!window.plugins.childBrowser) {
                 window.plugins.childBrowser = new ChildBrowser();
             }
@@ -94,9 +95,10 @@ enyo.kind({
         //for chrome, do this
         if (chrome.tabs) {
             chrome.tabs.create({url: url}, function(tab) {this.tabId = tab.id;}.bind(this));
-        } else if (!!cordova) {
+        //} else if (!!cordova) {
+        } else if (typeof cordova !== "undefined") {
             //for phonegap, do this
-            this.$.pgOauthLogin.showWebPage(url);
+            //this.$.pgOauthLogin.showWebPage(url);
         } else {
             this.winRef = window.open(encodeURI(url), "winRef");
             //globalWinRef = this.winRef;
@@ -106,13 +108,13 @@ enyo.kind({
 
     pgOauthSuccess: function(code) {
         this.code = code;
-        this.$.pgOauthLogin.close();
+        //this.$.pgOauthLogin.close();
         this.getAccessToken();
     },
 
     pgOauthFailure: function() {
         this.$.loginError.show();
-        this.$.pgOauthLogin.close();
+        //this.$.pgOauthLogin.close();
     },
 
 

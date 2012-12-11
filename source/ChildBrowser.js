@@ -44,18 +44,24 @@ enyo.kind({
         if (options === null || options === "undefined") {
             var opitions = {showLocationBar: true};
         }
-        cordova.exec(this._onEvent, this._onError, "ChildBrowser", "showWebPage", [url, options]);
+        if (!!cordova) {
+            cordova.exec(this._onEvent, this._onError, "ChildBrowser", "showWebPage", [url, options]);
+        }
     },
 
     close: function() {
-        cordova.exec(null, null, "ChildBrowser", "close", []);
+        if (!!cordova) {
+            cordova.exec(null, null, "ChildBrowser", "close", []);
+        }
     },
 
     openExternal: function(url, usecordova) {
         if (usecordova === true) {
             navigator.app.loadUrl(url);
         } else {
-            cordova.exec(null, null, "ChildBrowser", "openExternal", [url, usecordova]);
+            if (!!cordova) {
+                cordova.exec(null, null, "ChildBrowser", "openExternal", [url, usecordova]);
+            }
         }
     },
 

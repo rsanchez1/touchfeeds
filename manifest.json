@@ -1,5 +1,5 @@
 {
-    "name": "TouchFeeds",
+    "name": "TouchFeeds Testing",
     "description": "A client for Google Reader",
     "version": "2.0.0",
     "app": {
@@ -25,5 +25,6 @@
             "features": ["css3d"]
         }
     },
-    "offline_enabled": true
+    "offline_enabled": true,
+    "manifest_version": 2
 }

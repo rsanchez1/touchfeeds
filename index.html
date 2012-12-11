@@ -40,26 +40,16 @@
         </style>
         <link href="enyo-2.0b5/enyo.css" rel="stylesheet" type="text/css" />
         <!-- js -->
-        <script type="text/javascript">
-        if (!!window.chrome && !!window.chrome.app && !!window.chrome.app.isInstalled) {
-            //only run if an installed chrome web app
-            var _gaq = _gaq || [];
-            _gaq.push(['_setAccount', 'UA-29086930-1']);
-            _gaq.push(['_trackPageview']);
-            (function() {
-              var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-              ga.src = 'https://ssl.google-analytics.com/ga.js';
-              var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-            })();
-        }
-        </script>
         <script src="enyo-2.0b5/enyo.js" type="text/javascript"></script>
         <script src="source/package.js" type="text/javascript"></script>
     </head>
     <body>
+    <!--
     <script type="text/javascript">
         //new TouchFeeds.Main().renderInto(document.body);
         new TouchFeeds.Main({fit: true}).write();
     </script>
+    -->
+    <script src="source/loader.js" type="text/javascript"></script>
     </body>
 </html>

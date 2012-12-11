@@ -41,6 +41,7 @@ enyo.depends(
     "SingleArticleView.js",
     "Login.js",
     "Preferences.js"
+    //"ChildBrowser.js"
     /*
     //"Notifications.js"
     */
